@@ -58,10 +58,15 @@ struct tpi {
 
 const int INF = 0x3f3f3f3f;
 
+// K: 청소해야할 구역의 개수
+// m: map
+// v: 현재 위치
+
 int N, M, K;
 int m[20][20];
-pii v[11];
-int dist[11][11];
+pii v[20];
+int dist[20][20];
+
 int dy[4] = { -1, 1, 0, 0 };
 int dx[4] = { 0, 0, -1, 1 };
 
@@ -110,8 +115,10 @@ bool bfs(int st) {
     return true;
 }
 
-int ans;
-bool vi[11];
+int ans = 0;
+
+// vi: 간 곳에 플래그 찍는 배열
+bool vi[20];
 void dfs(int now, int sum, int dpt) {
     if (dpt == K) {
         ans = min(ans, sum);
@@ -131,23 +138,35 @@ void dfs(int now, int sum, int dpt) {
 int main() {
     while (1) {
         cin >> M >> N;
-        if (!N) break;
+        if(!N) break;
         memset(m, -1, sizeof(m));
         K = 0;
-        string str;
-        for (int i = 0; i < N; i++) {
-            cin >> str;
-            for (int j = 0; j < M; j++) {
-                if (str[j] == 'o')
-                    v[0].y = i, v[0].x = j, m[i][j] = 0;
-                else if (str[j] == '*')
-                    m[i][j] = ++K, v[K].y = i, v[K].x = j;
-                else if (str[j] == 'x')
-                    m[i][j] = -1;
-                else
-                    m[i][j] = 0;
+
+        int tmp = 0;
+
+        for (int i = 0; i < 20; i++) {
+            for (int j = 0; j < 20; j++) {
+                dist[i][j] = -1;
             }
         }
+        v[0].y = 0, v[0].x = 0;
+
+        srand(time(NULL));
+
+        // 0: 안치워도 되는데
+        // 1 이상: 치워야 하는데
+        // -1: 로봇청소기 위치
+        for (int i = 0; i < N; i++) {
+            for (int j = 0; j < M; j++) {
+                m[i][j] = tmp = rand() % 6;
+                cout << m[i][j] << " ";
+                if (tmp > 0) m[i][j] = ++K, v[K].y = i, v[K].x = j;
+                else  m[i][j] = 0;
+            }
+            cout << endl;
+        }
+
+        m[0][0] = -2;
 
         bool chk = true;
         for (int i = 0; i <= K; i++) {
@@ -163,6 +182,6 @@ int main() {
 
         ans = INF;
         dfs(0, 0, 0);
-        cout << ans << '\n';
+        cout << ans << '\n';        
     }
 }
