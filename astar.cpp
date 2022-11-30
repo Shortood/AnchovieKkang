@@ -4,8 +4,8 @@
 #include <cstdlib>
 #include <ctime>
 using namespace std;
-#define N 4
-#define M 4
+#define N 3
+#define M 3
 
 struct Node {
     Node* parent;      //부모 노드
@@ -21,8 +21,8 @@ Node* newNode(int state[N][M], int x, int y, int dx, int dy, int g, Node* parent
     node->parent = parent;
 
     memcpy(node->state, state, sizeof node->state);
-    node->state[x][y] = -1;
-    node->state[dx][dy] = 0;
+    node->state[x][y] = 0;
+    node->state[dx][dy] = -1;
 
     node->h = INT_MAX;
     node->g = g;
@@ -119,26 +119,26 @@ Node* ASTAR(int startState[N][M], int x, int y) {
 
 int main() {
     srand(time(NULL));
-    // int startState[N][M] = {
-    //     {0, -1, 1},
-    //     {1, -1, 1},
-    //     {1, 1, 1}
-    // };
+    int startState[N][M] = {
+        {1, 0, 1},
+        {1, 0, 1},
+        {1, 1, 1}
+    };
     
     // 랜덤 값 입력
-    int s;
-    int startState[N][M];
-    for (int i = 0; i < N; i++) {
-        for (int j = 0; j < M; j++) {
-            s = rand() % 6;
-            if (s == 0) startState[i][j] = -1;
-            else startState[i][j] = s;
-            cout << startState[i][j] << " ";
-        }
-        cout << '\n';
-    }
+    // int s;
+    // int startState[N][M];
+    // for (int i = 0; i < N; i++) {
+    //     for (int j = 0; j < M; j++) {
+    //         s = rand() % 6;
+    //         if (s == 0) startState[i][j] = -1;
+    //         else startState[i][j] = s;
+    //         cout << startState[i][j] << " ";
+    //     }
+    //     cout << '\n';
+    // }
 
-    Node* goalNode = ASTAR(startState, 0, 0);
+    Node* goalNode = ASTAR(startState, 0, 0); //시작 state, 시작 x좌표, y좌표 
 
     if (goalNode == NULL) cout << "A* Failed \n";
     else {
@@ -149,6 +149,6 @@ int main() {
 }
 
 
-// -1 : 안가도 되는 부분(깨끗한 부분)
-//  0 : 로봇청소기
+//   0 : 안가도 되는 부분(깨끗한 부분)
+//  -1 : 로봇청소기
 // 그 외 숫자  : 청소해야할 부분 
