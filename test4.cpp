@@ -6,43 +6,51 @@ using pii = pair<int, int>;
 using dpi = pair<pii, pii>;
 
 int N, M;
-int m[200][200];
-bool vi[200][200][1 << 16];
+int m[200][200];             //맵
+bool vi[200][200][1 << 16];  //위치 + 더러운 칸의 정보를 비트 마스킹으로 표현
 int dy[4] = {-1, 1, 0, 0};
 int dx[4] = {0, 0, -1, 1};
 
 int bfs(int sty, int stx, int K) {
-    memset(vi, 0, sizeof(vi));
-    queue<dpi> q;
-    q.push({{0, 0}, {sty, stx}});
-    vi[sty][stx][0] = false;
+    // cout << "ck " << (1 << K) - 1;
+    memset(vi, 0, sizeof(vi));     //배열을 0으로 초기화
+    queue<dpi> q;                  //큐 선언
+    q.push({{0, 0}, {sty, stx}});  //큐에 0,0과 로봇의 위치 삽입
+    vi[sty][stx][0] = false;       //로봇의 위치는 가지 않았다고 설정
 
     while (!q.empty()) {
-        int cd = q.front().xx.xx;
-        int ck = q.front().xx.yy;
-        int cy = q.front().yy.xx;
-        int cx = q.front().yy.yy;
-        // cout << "pop" << endl;
+        int cd = q.front().xx.xx;  //큐의 첫번째, 이동한 횟수
+        int ck = q.front().xx.yy;  //큐의 두번째, 확인한 오염된 좌표 수
+        int cy = q.front().yy.xx;  //큐의 세번째, 현재 y좌표
+        int cx = q.front().yy.yy;  //큐의 네번째, 현재 x좌표
         q.pop();
-
-        // cout << "ck " << ck << " " << ((1 << K) - 1) << endl;
+        //총 4개라면 10000-1 => 1111
+        // cout << "ck " << ck << " " << ((1 << K) - 1) << " " << (1 << 16) << endl;
+        //모든 오염된 위치를 지났으면 ck의 상태는 1이 K개 반복된 2진수 형태
+        // ex) 오염된 좌표수가 4개 -> 1111
         if (ck == (1 << K) - 1) {
-            return cd;
+            return cd;  //몇 번 이동했는지 리턴
         }
-        for (int i = 0; i < 4; i++) {
-            int nd = cd + 1;
-            int nk = ck;
-            int ny = cy + dy[i];
+        for (int i = 0; i < 4; i++) {  // 4방향 이동
+            int nd = cd + 1;           //이동한 횟수 1증가
+            int nk = ck;               //다시 nk를 복구 -> 4방향 보기 위해서
+            int ny = cy + dy[i];       //다음 이동할 위치
             int nx = cx + dx[i];
+            //못 가는 곳이라면 continue
             if (ny < 0 || nx < 0 || ny >= N || nx >= M || m[ny][nx] == -1) continue;
+            //다음 확인할 위치가 오염되었다면 or 연산을 통해 오염된 위치를 표시
+            // ex)지금까지 1번째, 2번째 오염된 위치를 확인하고 3번째를 찾았다면
+            // 0011 | (1 << 3-1) = 0011 | (1 << 2) = 0011 | 0100 => 0111
+            //즉 0번째를 제외한 1, 2, 3 번째 오염된 위치를 확인
             if (m[ny][nx] > 0) nk |= (1 << (m[ny][nx] - 1));
-            if (vi[ny][nx][nk]) continue;
-            q.push({{nd, nk}, {ny, nx}});
-            vi[ny][nx][nk] = true;
+            if (vi[ny][nx][nk]) continue;  //이미 간 곳이라면 countinue
+            q.push({{nd, nk}, {ny, nx}});  //큐에 푸시
+            // cout << "nk " << nk << " " << nx << " " << ny << endl;
+            vi[ny][nx][nk] = true;  //간 곳이라고 표시해줌
         }
     }
-    cout << "bfs done " << endl;
-    return 24;
+    // cout << "bfs done " << endl;
+    return N * M - 1;
 }
 
 int main() {
@@ -51,123 +59,31 @@ int main() {
     int tmp = 0;
     int cnt = 0;
     while (1) {
-        cin >> N >> M;
+        cnt = 0;
+        cin >> N >> M;  //행, 열 수
         if (!N) break;
-        memset(m, -1, sizeof(m));
-        int sty, stx, K = 0;
+        memset(m, -1, sizeof(m));  // m 배열 초기화
+        int sty, stx, K = 0;       //로봇 위치, 오염된 위치 수
         string str;
-        m[0][0] = 0;
-        m[0][1] = 0;
-        m[0][2] = 0;
-        m[0][3] = 1;
-        m[0][4] = 0;
-        m[0][5] = 0;
-        m[0][6] = 1;
-        m[0][7] = 0;
-        m[0][8] = 0;
-        m[0][9] = 0;
-        m[1][0] = 0;
-        m[1][1] = 0;
-        m[1][2] = 0;
-        m[1][3] = 1;
-        m[1][4] = 0;
-        m[1][5] = 0;
-        m[1][6] = 1;
-        m[1][7] = 0;
-        m[1][8] = 0;
-        m[1][9] = 0;
-        m[2][0] = 0;
-        m[2][1] = 0;
-        m[2][2] = 0;
-        m[2][3] = 1;
-        m[2][4] = 0;
-        m[2][5] = 0;
-        m[2][6] = 1;
-        m[2][7] = 0;
-        m[2][8] = 0;
-        m[2][9] = 0;
-        m[3][0] = 0;
-        m[3][1] = 0;
-        m[3][2] = 0;
-        m[3][3] = 1;
-        m[3][4] = 0;
-        m[3][5] = 0;
-        m[3][6] = 1;
-        m[3][7] = 0;
-        m[3][8] = 0;
-        m[3][9] = 0;
-        m[4][0] = 0;
-        m[4][1] = 0;
-        m[4][2] = 0;
-        m[4][3] = 1;
-        m[4][4] = 0;
-        m[4][5] = 0;
-        m[4][6] = 1;
-        m[4][7] = 0;
-        m[4][8] = 0;
-        m[4][9] = 0;
-        m[5][0] = 0;
-        m[5][1] = 0;
-        m[5][2] = 0;
-        m[5][3] = 1;
-        m[5][4] = 0;
-        m[5][5] = 0;
-        m[5][6] = 1;
-        m[5][7] = 0;
-        m[5][8] = 0;
-        m[5][9] = 0;
-        m[6][0] = 0;
-        m[6][1] = 0;
-        m[6][2] = 0;
-        m[6][3] = 1;
-        m[6][4] = 0;
-        m[6][5] = 0;
-        m[6][6] = 1;
-        m[6][7] = 0;
-        m[6][8] = 0;
-        m[6][9] = 1;
-        m[7][0] = 0;
-        m[7][1] = 0;
-        m[7][2] = 0;
-        m[7][3] = 1;
-        m[7][4] = 0;
-        m[7][5] = 0;
-        m[7][6] = 1;
-        m[7][7] = 0;
-        m[7][8] = 0;
-        m[7][9] = 0;
-        m[8][0] = 1;
-        m[8][1] = 0;
-        m[8][2] = 0;
-        m[8][3] = 1;
-        m[8][4] = 0;
-        m[8][5] = 0;
-        m[8][6] = 1;
-        m[8][7] = 0;
-        m[8][8] = 1;
-        m[8][9] = 0;
-        m[9][0] = 0;
-        m[9][1] = 0;
-        m[9][2] = 0;
-        m[9][3] = 0;
-        m[9][4] = 0;
-        m[9][5] = 0;
-        m[9][6] = 0;
-        m[9][7] = 0;
-        m[9][8] = 0;
-        m[9][9] = 1;
+
         for (int i = 0; i < N; i++) {
             for (int j = 0; j < M; j++) {
-                // m[i][j] = tmp = rand() % 6;
-                tmp = m[i][j];
-                cout << m[i][j] << " ";
-                if ((tmp > 0) && (i != 0 || j != 0)) {
-                    m[i][j] = ++K;
+                m[i][j] = tmp = rand() % 2;  //랜덤 생성
+                /*  오염된 좌표 갯수 리미트
+                /if (tmp > 0) cnt++;
+                if (cnt > 20) {
+                    m[i][j] = 0;
+                    tmp = 0;
+                }*/
+                cout << m[i][j] << " ";                 //방 상태 출력
+                if ((tmp > 0) && (i != 0 || j != 0)) {  //시작위치가 아니고 오염되었다면
+                    m[i][j] = ++K;                      //몇 번째로 확인했는지 입력
                 }
             }
             cout << endl;
         }
-        sty = 0, stx = 0, m[0][0] = 0;
-        cout << "출력 " << bfs(sty, stx, K) << endl;
+        sty = 0, stx = 0, m[0][0] = 0;  //로봇 위치 설정
+        cout << "출력 " << endl;
+        cout << bfs(sty, stx, K) << endl;
     }
 }
