@@ -1,9 +1,0 @@
-{filename}.cpp
-make {filename} : 파일 만들기
-./{filename} : 파일 실행하기(검사 X)
-valgrind ./{filename} : 파일 실행하기(검사 O)
-
-ctrl + k + o : 폴더옮기기
-ctrl + shift + p : 일단 java 프로젝트
-ctrl + ~ : 터미널 실행
-shift + '+' or '_' : 확대 축소 

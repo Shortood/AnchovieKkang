@@ -1,159 +1,157 @@
-#include <iostream>
-#include <queue>
-#include <string>
-#include <cstdlib>
-#include <ctime>
-
-using namespace std;
-
-int N, M;               //ë°©ì˜ í¬ê¸° N, M, ì „ì—­ë³€ìˆ˜ë¡œ ì„ ì–¸
-
-struct Node {
-    Node* parent;       //ë¶€ëª¨ ë…¸ë“œ
-    int **state;        //ë…¸ë“œ ìƒíƒœ
-    int x, y;           //ë…¸ë“œ ì¢Œí‘œ
-    int g, h;           //ë…¸ë“œì˜ í•¨ìˆ˜
-    string moves;       //ë…¸ë“œì˜ ë°©í–¥
-
-    Node() {
-        moves = "";
-        state = new int*[N];
-        for (int i = 0; i < N; i++) 
-            state[i] = new int[M];
-    }
-
-};
-
-//ìƒˆë¡œìš´ ë…¸ë“œ ìƒì„± í›„ ë°˜í™˜
-Node* newNode(int **state, int x, int y, int dx, int dy, int g, Node* parent) {
-    Node* node = new Node;
-    node->parent = parent;
-    
-    for (int i = 0; i < N; i++) 
-        for (int j = 0; j < M; j++) 
-            node->state[i][j] = state[i][j];
-
-    
-    node->state[x][y] = 0;
-    node->state[dx][dy] = -1;
-
-    node->h = INT_MAX;
-    node->g = g;
-
-    node->x = dx;
-    node->y = dy;
-    return node;
-}
-
-            // U, L, D, R
-int dx[4] = { -1, 0, 1, 0 };
-int dy[4] = { 0, -1, 0, 1 };
-
-//ìµœì ì˜ ì´ë™ê²½ë¡œ ì €ì¥
-string solutionPath = "";
-
-//ë…¸ë“œ state ì¶œë ¥
-void printState(int **state) {
-    for (int i = 0; i < N; i++) {
-        for (int j = 0; j < M; j++)
-            cout << state[i][j] << '\t';
-        cout << '\n';
-    }
-}
-
-//ëª©í‘œ ë…¸ë“œì— ë„ì°©í•˜ê¸°ê¹Œì§€ì˜ ê³¼ì • ì¶œë ¥
-void printSolutionPath(Node* node) {
-    if (node == NULL) return;
-    printSolutionPath(node->parent);
-    solutionPath += node->moves + " - ";
-    printState(node->state);
-    cout << "\n";
-}
-
-//íœ´ë¦¬ìŠ¤í‹± í•¨ìˆ˜
-int heuristic(int **state) {
-    int h = 0;
-    for (int i = 0; i < N; i++)
-        for (int j = 0; j < M; j++) 
-            if (state[i][j] > 0)
-                h++;
-    return h;
-}
-
-//ì´ë™ ê°€ëŠ¥ ì—¬ë¶€ íŒë‹¨
-bool isValid(int x, int y) {
-    return (x >= 0 && x < N && y >= 0 && y < M);
-}
-
-//í•¨ìˆ˜ ê³„ì‚° ë° ë¹„êµ
-struct compare { 
-    bool operator()(const Node* lhs, const Node* rhs) const {
-        return (lhs->h + lhs->g) > (rhs->h + rhs->g);
-    }
-};
-
-//ASTAR
-Node* ASTAR(int **startState, int x, int y) {
-    //í•¨ìˆ˜ í‰ê°€ ê°’ì´ ìµœì†Œì¸ ë…¸ë“œë¥¼ ì°¾ê¸° ìœ„í•´ ìš°ì„  ìˆœìœ„ íë¥¼ ì‚¬ìš©
-    priority_queue<Node*, vector<Node*>, compare> open; 
-
-    Node* state = newNode(startState, x, y, x, y, 0, NULL);
-    open.push(state);
-
-    string move = "ULDR"; //ì´ë™ ì¢Œí‘œ ì¸ë±ìŠ¤ í™œìš©
-    
-    while (!open.empty()) {
-        Node* currentNode = open.top();
-        open.pop();
-
-        if (currentNode->h == 0) //ëª©í‘œ ë…¸ë“œ ë„ë‹¬
-            return currentNode;
-        
-        for (int i = 0; i < 4; i++) { //ë…¸ë“œ expand
-            if (!isValid(currentNode->x + dx[i], currentNode->y + dy[i])) continue;
-            Node* childNode = newNode(
-                        currentNode->state, 
-                        currentNode->x,
-                        currentNode->y, 
-                        currentNode->x + dx[i],
-                        currentNode->y + dy[i],
-                        currentNode->g + 1, 
-                        currentNode);
-
-            childNode->h = heuristic(childNode->state);
-            childNode->moves = move[i];
-            open.push(childNode);
-        }
-    }
-    return NULL;
-}
-
-int main() {
-    srand(time(NULL));
-
-    cout << "ë°©ì˜ í¬ê¸° N, M ì…ë ¥ : ";
-    cin >> N >> M;
-
-    cout << "ì‹œì‘ì¢Œí‘œ x, y ì…ë ¥ : ";
-    int x, y; cin >> x >> y;
-
-    //ë™ì í• ë‹¹
-    int **startState = new int*[N];
-    for (int i = 0; i < N; i++) 
-        startState[i] = new int[M];
-    
-    //ëœë¤ìœ¼ë¡œ ìƒíƒœ ì…ë ¥
-    for (int i = 0; i < N; i++) 
-        for (int j = 0; j < M; j++) 
-            startState[i][j] = rand() % 2;
-
-    Node* goalNode = ASTAR(startState, x, y); //ì‹œì‘ state, ì‹œì‘ xì¢Œí‘œ, yì¢Œí‘œ 
-
-    if (goalNode == NULL) cout << "A* Failed \n";
-    else {
-        cout << "A* Succeeded \n\n";
-        printSolutionPath(goalNode);
-        cout << "Solution Path" << solutionPath << "Finish\n";
-    }
-
-}
+//#include <iostream>
+//#include <queue>
+//#include <string>
+//#include <cstdlib>
+//#include <ctime>
+//
+//using namespace std;
+//
+//int N, M;               //¹æÀÇ Å©±â N, M, Àü¿ªº¯¼ö·Î ¼±¾ğ
+//
+//struct Node {
+//    Node* parent;       //ºÎ¸ğ ³ëµå
+//    int** state;        //³ëµå »óÅÂ
+//    int x, y;           //³ëµå ÁÂÇ¥
+//    int g, h;           //³ëµåÀÇ ÇÔ¼ö
+//    string moves;       //³ëµåÀÇ ¹æÇâ
+//
+//    Node() {
+//        moves = "";
+//        state = new int* [N];
+//        for (int i = 0; i < N; i++)
+//            state[i] = new int[M];
+//    }
+//
+//};
+//
+////»õ·Î¿î ³ëµå »ı¼º ÈÄ ¹İÈ¯
+//Node* newNode(int** state, int x, int y, int dx, int dy, int g, Node* parent) {
+//    Node* node = new Node;
+//    node->parent = parent;
+//
+//    for (int i = 0; i < N; i++)
+//        for (int j = 0; j < M; j++)
+//            node->state[i][j] = state[i][j];
+//
+//
+//    node->state[x][y] = 0;
+//    node->state[dx][dy] = -1;
+//
+//    node->h = INT_MAX;
+//    node->g = g;
+//
+//    node->x = dx;
+//    node->y = dy;
+//    return node;
+//}
+//
+//// U, L, D, R
+//int dx[4] = { -1, 0, 1, 0 };
+//int dy[4] = { 0, -1, 0, 1 };
+//
+////ÃÖÀûÀÇ ÀÌµ¿°æ·Î ÀúÀå
+//string solutionPath = "";
+//
+////³ëµå state Ãâ·Â
+//void printState(int** state) {
+//    for (int i = 0; i < N; i++) {
+//        for (int j = 0; j < M; j++)
+//            cout << state[i][j] << '\t';
+//        cout << '\n';
+//    }
+//}
+//
+////¸ñÇ¥ ³ëµå¿¡ µµÂøÇÏ±â±îÁöÀÇ °úÁ¤ Ãâ·Â
+//void printSolutionPath(Node* node) {
+//    if (node == NULL) return;
+//    printSolutionPath(node->parent);
+//    solutionPath += node->moves + " - ";
+//    printState(node->state);
+//    cout << "\n";
+//}
+//
+////ÈŞ¸®½ºÆ½ ÇÔ¼ö
+//int heuristic(int** state) {
+//    int h = 0;
+//    for (int i = 0; i < N; i++)
+//        for (int j = 0; j < M; j++)
+//            if (state[i][j] > 0)
+//                h++;
+//    return h;
+//}
+//
+////ÀÌµ¿ °¡´É ¿©ºÎ ÆÇ´Ü
+//bool isValid(int x, int y) {
+//    return (x >= 0 && x < N&& y >= 0 && y < M);
+//}
+//
+////ÇÔ¼ö °è»ê ¹× ºñ±³
+//struct compare {
+//    bool operator()(const Node* lhs, const Node* rhs) const {
+//        return (lhs->h + lhs->g) > (rhs->h + rhs->g);
+//    }
+//};
+//
+////ASTAR
+//Node* ASTAR(int** startState, int x, int y) {
+//    //ÇÔ¼ö Æò°¡ °ªÀÌ ÃÖ¼ÒÀÎ ³ëµå¸¦ Ã£±â À§ÇØ ¿ì¼± ¼øÀ§ Å¥¸¦ »ç¿ë
+//    priority_queue<Node*, vector<Node*>, compare> open;
+//
+//    Node* state = newNode(startState, x, y, x, y, 0, NULL);
+//    open.push(state);
+//
+//    string move = "ULDR"; //ÀÌµ¿ ÁÂÇ¥ ÀÎµ¦½º È°¿ë
+//
+//    while (!open.empty()) {
+//        Node* currentNode = open.top();
+//        open.pop();
+//
+//        if (currentNode->h == 0) //¸ñÇ¥ ³ëµå µµ´Ş
+//            return currentNode;
+//
+//        for (int i = 0; i < 4; i++) { //³ëµå expand
+//            if (!isValid(currentNode->x + dx[i], currentNode->y + dy[i])) continue;
+//            Node* childNode = newNode(
+//                currentNode->state,
+//                currentNode->x,
+//                currentNode->y,
+//                currentNode->x + dx[i],
+//                currentNode->y + dy[i],
+//                currentNode->g + 1,
+//                currentNode);
+//
+//            childNode->h = heuristic(childNode->state);
+//            childNode->moves = move[i];
+//            open.push(childNode);
+//        }
+//    }
+//    return NULL;
+//}
+//
+//int main() {
+//    srand(time(NULL));
+//
+//    cout << "¹æÀÇ Å©±â ÀÔ·Â : ";
+//    cin >> N >> M;
+//     
+//    cout << "½ÃÀÛ ÁÂÇ¥ ÀÔ·Â : ";
+//    int x, y; cin >> x >> y;
+//
+//    //µ¿ÀûÇÒ´ç
+//    int** startState = new int* [N];
+//    for (int i = 0; i < N; i++)
+//        startState[i] = new int[M];
+//
+//    //·£´ıÀ¸·Î »óÅÂ ÀÔ·Â
+//    for (int i = 0; i < N; i++)
+//        for (int j = 0; j < M; j++)
+//            startState[i][j] = rand() % 2;
+//
+//    Node* goalNode = ASTAR(startState, x, y); //½ÃÀÛ state, ½ÃÀÛ xÁÂÇ¥, yÁÂÇ¥ 
+//
+//    if (goalNode == NULL) cout << "A* Failed \n";
+//    else {
+//        printSolutionPath(goalNode);
+//        cout << "Solution Path" << solutionPath << "Finish\n";
+//    }
+//}
